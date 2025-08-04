@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { loginSchema } from "@/lib/validation";
+import { registerSchema } from "@/lib/validation";
 
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -24,24 +24,39 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
+import {  UserPlus } from "lucide-react";
+import useAuthStore from "@/store/useAuthStore";
 
-type FormData = z.infer<typeof loginSchema>;    
+type FormData = z.infer<typeof registerSchema>;
 
 function Register() {
-    const [isLoading, setIsLoading] = useState(false);
-    
-      const navigate = useNavigate();
-    
-      const form = useForm<FormData>({
-        resolver: zodResolver(loginSchema),
-        defaultValues: {
-          email: "",
-          password: "",
-        },
-      });
-    
-      const onSubmit = async () => {};
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useAuthStore();
+
+  const navigate = useNavigate();
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "user",
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
+    try {
+     await register(data);
+
+      console.log("Regsitration ",);
+      navigate("/login");
+    } catch (error) {
+      console.log("Failed to register", error);
+    }
+    console.log(data);
+  };
   return (
     <div className=" w-full min-h-screen  bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
       <motion.div
@@ -73,6 +88,28 @@ function Register() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Name
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John Doe"
+                          type="text"
+                          disabled={isLoading}
+                          className="border border-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hoverEffect placeholder:text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -117,10 +154,33 @@ function Register() {
                   )}
                 />
 
+                <div className="cursor-not-allowed">
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          Role
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="User"
+                            type="text"
+                            disabled
+                            className="border  border-gray-400 text-gray-500 bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hoverEffect placeholder:text-sm"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <div>
                   <Button className="w-full bg-indigo-600 hover:bg-indigo-700 hoverEffect py-2">
-                    <LogIn />
-                    Sign in
+                    <UserPlus />
+                    Sign Up
                   </Button>
                 </div>
               </form>
@@ -128,12 +188,12 @@ function Register() {
           </CardContent>
           <CardFooter className="justify-center">
             <p className="text-sm text-gray-500">
-              Don't have an account?{" "}
+              Already have an account?{" "}
               <Link
                 to={"/login"}
                 className="text-indigo-600 hover:text-indigo-800 hoverEffect"
               >
-                Sign up
+                Sign in
               </Link>
             </p>
           </CardFooter>

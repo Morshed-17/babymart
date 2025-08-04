@@ -24,13 +24,14 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
+import { Loader2, LogIn } from "lucide-react";
+import useAuthStore from "@/store/useAuthStore";
 
 type FormData = z.infer<typeof loginSchema>;
 
 function Login() {
   const [isLoading, setIsLoading] = useState(false);
-
+  const {login} = useAuthStore()
   const navigate = useNavigate();
 
   const form = useForm<FormData>({
@@ -41,7 +42,17 @@ function Login() {
     },
   });
 
-  const onSubmit = async () => {};
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true)
+    try {
+       await login(data)
+       navigate("/dashboard")
+    } catch (error) {
+      console.error("Failed to login", error)
+    }finally{
+      setIsLoading(false)
+    }
+  };
 
   return (
     <div className=" w-full min-h-screen  bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
@@ -118,17 +129,37 @@ function Login() {
                   )}
                 />
 
-                <div >
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 hoverEffect py-2">
-                    <LogIn />
-                    Sign in
+                <div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 hoverEffect py-2"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="animate-spin " />
+                        Signing in...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <LogIn />
+                        Sign in
+                      </span>
+                    )}
                   </Button>
                 </div>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="justify-center">
-            <p className="text-sm text-gray-500">Don't have an account? <Link to={"/register"} className="text-indigo-600 hover:text-indigo-800 hoverEffect">Sign up</Link></p>
+            <p className="text-sm text-gray-500">
+              Don't have an account?{" "}
+              <Link
+                to={"/register"}
+                className="text-indigo-600 hover:text-indigo-800 hoverEffect"
+              >
+                Sign up
+              </Link>
+            </p>
           </CardFooter>
         </Card>
       </motion.div>

@@ -1,8 +1,13 @@
+import { Button } from '@/components/ui/button'
+import useAuthStore from '@/store/useAuthStore'
 import React from 'react'
 
 function DashboardPage() {
+  const {logout} = useAuthStore()
   return (
-    <div>DashboardPage</div>
+    <div className='p-10'>
+      <Button variant={"destructive"} onClick={()=>logout()}>Logout</Button>
+    </div>
   )
 }
 
